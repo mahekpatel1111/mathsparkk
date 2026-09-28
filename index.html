@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MathSpark - Smart Equation Solver ⚡</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    body { background-color: #f4f6f9; color: #1e293b; padding: 20px 10px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+    .container { width: 100%; max-width: 600px; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); padding: 24px; margin-bottom: 20px; }
+    h1 { color: #0f172a; font-size: 1.6rem; text-align: center; margin-bottom: 8px; }
+    p.subtitle { text-align: center; color: #64748b; font-size: 0.95rem; margin-bottom: 20px; }
+    .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; background: #f1f5f9; padding: 5px; border-radius: 10px; }
+    .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; font-size: 0.95rem; font-weight: 600; color: #64748b; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    .tab-btn.active { background: #2563eb; color: #ffffff; }
+    .eqn-preview { text-align: center; font-size: 1.2rem; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #bfdbfe; }
+    .input-group { margin-bottom: 14px; }
+    label { display: block; font-size: 0.9rem; font-weight: 600; color: #334155; margin-bottom: 6px; }
+    label span { color: #2563eb; font-weight: 700; }
+    input[type="number"] { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; outline: none; }
+    input[type="number"]:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+    button.solve-btn { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+    button.solve-btn:hover { background: #1d4ed8; }
+    .result-box { margin-top: 20px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; display: none; }
+    .result-title { font-weight: 700; color: #0f172a; margin-bottom: 10px; font-size: 1.05rem; }
+    .step { background: #ffffff; padding: 10px 12px; border-left: 4px solid #2563eb; border-radius: 4px; margin-bottom: 8px; font-size: 0.9rem; color: #334155; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>MathSpark Solver ⚡</h1>
+    <p class="subtitle">Step-by-step solutions for Quadratic and Cubic Equations</p>
+
+    <div class="tab-buttons">
+      <button class="tab-btn active" onclick="switchTab('quad')">Quadratic (2nd Degree)</button>
+      <button class="tab-btn" onclick="switchTab('cubic')">Cubic (3rd Degree)</button>
+    </div>
+
+    <!-- QUADRATIC SECTION -->
+    <div id="quad" class="tab-content active">
+      <div class="eqn-preview">ax² + bx + c = 0</div>
+      
+      <div class="input-group">
+        <label>Enter value of <span>a</span> (Coefficient of x²):</label>
+        <input type="number" id="q_a" placeholder="e.g. 1" step="any">
+      </div>
+      <div class="input-group">
+        <label>Enter value of <span>b</span> (Coefficient of x):</label>
+        <input type="number" id="q_b" placeholder="e.g. -5" step="any">
+      </div>
+      <div class="input-group">
+        <label>Enter value of <span>c</span> (Constant term):</label>
+        <input type="number" id="q_c" placeholder="e.g. 6" step="any">
+      </div>
+
+      <button class="solve-btn" onclick="solveQuadratic()">Solve Equation ✨</button>
+      <div id="quad_result" class="result-box"></div>
+    </div>
+
+    <!-- CUBIC SECTION -->
+    <div id="cubic" class="tab-content">
+      <div class="eqn-preview">ax³ + bx² + cx + d = 0</div>
+      
+      <div class="input-group">
+        <label>Enter value of <span>a</span> (Coefficient of x³):</label>
+        <input type="number" id="c_a" placeholder="e.g. 1" step="any">
+      </div>
+      <div class="input-group">
+        <label>Enter value of <span>b</span> (Coefficient of x²):</label>
+        <input type="number" id="c_b" placeholder="e.g. -6" step="any">
+      </div>
+      <div class="input-group">
+        <label>Enter value of <span>c</span> (Coefficient of x):</label>
+        <input type="number" id="c_c" placeholder="e.g. 11" step="any">
+      </div>
+      <div class="input-group">
+        <label>Enter value of <span>d</span> (Constant term):</label>
+        <input type="number" id="c_d" placeholder="e.g. -6" step="any">
+      </div>
+
+      <button class="solve-btn" onclick="solveCubic()">Solve Equation ✨</button>
+      <div id="cubic_result" class="result-box"></div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      if(tab === 'quad') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('quad').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('cubic').classList.add('active');
+      }
+    }
+
+    function solveQuadratic() {
+      const a = parseFloat(document.getElementById('q_a').value);
+      const b = parseFloat(document.getElementById('q_b').value);
+      const c = parseFloat(document.getElementById('q_c').value);
+      const res = document.getElementById('quad_result');
+
+      if (isNaN(a) || isNaN(b) || isNaN(c)) {
+        res.style.display = 'block';
+        res.innerHTML = '<div class="step">⚠️ Please enter all three values (a, b, and c).</div>';
+        return;
+      }
+      if (a === 0) {
+        res.style.display = 'block';
+        res.innerHTML = '<div class="step">⚠️ Value of "a" cannot be 0 in a quadratic equation.</div>';
+        return;
+      }
+
+      const disc = b * b - 4 * a * c;
+      let html = `<div class="result-title">Steps & Solution 📝:</div>`;
+      html += `<div class="step"><b>Given Equation:</b> ${a}x² + (${b})x + (${c}) = 0</div>`;
+      html += `<div class="step"><b>Discriminant (D):</b> b² - 4ac = (${b})² - 4(${a})(${c}) = <b>${disc}</b></div>`;
+
+      if (disc > 0) {
+        const x1 = (-b + Math.sqrt(disc)) / (2 * a);
+        const x2 = (-b - Math.sqrt(disc)) / (2 * a);
+        html += `<div class="step">🎯 <b>Root 1 (x₁):</b> ${x1.toFixed(3)}</div>`;
+        html += `<div class="step">🎯 <b>Root 2 (x₂):</b> ${x2.toFixed(3)}</div>`;
+      } else if (disc === 0) {
+        const x = -b / (2 * a);
+        html += `<div class="step">🎯 <b>One Real Root (x):</b> ${x.toFixed(3)}</div>`;
+      } else {
+        const real = (-b / (2 * a)).toFixed(3);
+        const imag = (Math.sqrt(-disc) / (2 * a)).toFixed(3);
+        html += `<div class="step">🎯 <b>Complex Root 1:</b> ${real} + ${imag}i</div>`;
+        html += `<div class="step">🎯 <b>Complex Root 2:</b> ${real} - ${imag}i</div>`;
+      }
+
+      res.style.display = 'block';
+      res.innerHTML = html;
+    }
+
+    function solveCubic() {
+      const a = parseFloat(document.getElementById('c_a').value);
+      const b = parseFloat(document.getElementById('c_b').value);
+      const c = parseFloat(document.getElementById('c_c').value);
+      const d = parseFloat(document.getElementById('c_d').value);
+      const res = document.getElementById('cubic_result');
+
+      if (isNaN(a) || isNaN(b) || isNaN(c) || isNaN(d)) {
+        res.style.display = 'block';
+        res.innerHTML = '<div class="step">⚠️ Please enter all four values (a, b, c, and d).</div>';
+        return;
+      }
+      if (a === 0) {
+        res.style.display = 'block';
+        res.innerHTML = '<div class="step">⚠️ Value of "a" cannot be 0 in a cubic equation.</div>';
+        return;
+      }
+
+      const A = b / a;
+      const B = c / a;
+      const C = d / a;
+
+      const Q = (3 * B - A * A) / 9;
+      const R = (9 * A * B - 27 * C - 2 * A * A * A) / 54;
+      const D = Q * Q * Q + R * R;
+
+      let html = `<div class="result-title">Steps & Solution 📝:</div>`;
+      html += `<div class="step"><b>Given Equation:</b> ${a}x³ + (${b})x² + (${c})x + (${d}) = 0</div>`;
+
+      if (D > 0) {
+        const S = Math.cbrt(R + Math.sqrt(D));
+        const T = Math.cbrt(R - Math.sqrt(D));
+        const x1 = -A / 3 + (S + T);
+        const real = -A / 3 - (S + T) / 2;
+        const imag = (Math.abs(S - T) * Math.sqrt(3)) / 2;
+
+        html += `<div class="step">🎯 <b>Real Root (x₁):</b> ${x1.toFixed(3)}</div>`;
+        html += `<div class="step">🎯 <b>Complex Root (x₂):</b> ${real.toFixed(3)} + ${imag.toFixed(3)}i</div>`;
+        html += `<div class="step">🎯 <b>Complex Root (x₃):</b> ${real.toFixed(3)} - ${imag.toFixed(3)}i</div>`;
+      } else if (D === 0) {
+        const S = Math.cbrt(R);
+        const x1 = -A / 3 + 2 * S;
+        const x2 = -A / 3 - S;
+
+        html += `<div class="step">🎯 <b>Root 1 (x₁):</b> ${x1.toFixed(3)}</div>`;
+        html += `<div class="step">🎯 <b>Root 2 & 3 (x₂, x₃):</b> ${x2.toFixed(3)}</div>`;
+      } else {
+        const theta = Math.acos(R / Math.sqrt(-Q * Q * Q));
+        const x1 = 2 * Math.sqrt(-Q) * Math.cos(theta / 3) - A / 3;
+        const x2 = 2 * Math.sqrt(-Q) * Math.cos((theta + 2 * Math.PI) / 3) - A / 3;
+        const x3 = 2 * Math.sqrt(-Q) * Math.cos((theta + 4 * Math.PI) / 3) - A / 3;
+
+        html += `<div class="step">🎯 <b>Root 1 (x₁):</b> ${x1.toFixed(3)}</div>`;
+        html += `<div class="step">🎯 <b>Root 2 (x₂):</b> ${x2.toFixed(3)}</div>`;
+        html += `<div class="step">🎯 <b>Root 3 (x₃):</b> ${x3.toFixed(3)}</div>`;
+      }
+
+      res.style.display = 'block';
+      res.innerHTML = html;
+    }
+  </script>
+</body>
+</html>
